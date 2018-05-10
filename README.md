@@ -13,10 +13,8 @@ Through this project, we hope to provide car owners with a peace of mind and abi
 Furthermore, with the ability to log accelerometer data, the arduino will have the ability to safe drive data in case of an accident. This will help drivers prove that they have been maneuvering in a safe or unsafe manner should there be a need to prove the driving style of the driver.
 Although this project was initially developed to help the users track the location of the car in real-time, it can be extended to tracking other commonly stolen, lost, or misplaced items.
 
->>Insert description and motivation here
-
 >>Insert overview here (cost, materials)
 
 >>Insert steps
 
-Low-cost GPS enabled SMS tracking
+https://cdn-learn.adafruit.com/downloads/pdf/adafruit-fona-808-cellular-plus-gps-breakout.pdf
