@@ -8,6 +8,7 @@
 //Accelerometer: https://github.com/sparkfun/SparkFun_MMA8452Q_Arduino_Library
 //LCD: https://github.com/adafruit/Adafruit-RGB-LCD-Shield-Library
 
+
 void setup() {
   // put your setup code here, to run once:
 
