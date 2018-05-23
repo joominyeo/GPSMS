@@ -9,9 +9,6 @@
 // LCD: https://github.com/adafruit/Adafruit-RGB-LCD-Shield-Library
 
 // libraries
-#include <iostream>
-#include <string>
-
 #include <LiquidCrystal.h>
 #include <Wire.h>
 
@@ -38,6 +35,7 @@ char imei[16] = {0};
 char fonaNotificationBuffer[64]; //for notifications from the FONA
 char smsBuffer[250];
 float latitude, longitude, speed_kph, heading, speed_mph, altitude;
+char lat[8], lon[7], spd[4], alt[7], latlon[16], spdalt[16];
 
 uint8_t readline(char *buff, uint8_t maxbuff, uint16_t timeout = 0);
 
@@ -85,12 +83,22 @@ void setup() {
     lcd.setCursor(0,1);
     lcd.print("lat,long,mph,alt");
     delay(3000);
-    lcd.print(dtostrf(latitude).substr(0,8) + "," + dtostrf(longitude).substr(0,7));
+    
+    dtostrf(latitude,8,3, lat);
+    dtostrf(longitude,7,3, lon);
+    strcat(latlon, lat);
+    strcat(latlon, ',');
+    strcat(latlon, lon);
+    dtostrf(0.621371192 * speed_kph, 4, 2, spd);
+    dtostrf(altitude,7,3, alt);
+    strcat(spdalt, spd);
+    strcat(spdalt, "mph,");
+    strcat(spdalt, alt);
+    lcd.print(latlon);
     lcd.setCursor(0,1);
-    lcd.print(dtostrf(0.621371192 * speed_kph).substr(0,4) + "mph," + dtostrf(altitude).substr(0,8));
+    lcd.print(spdalt);
     delay(3000);
   }
-
 } // end of setup
 
 void loop() {
