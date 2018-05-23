@@ -68,7 +68,7 @@ void setup() {
   lcd.setCursor(0,0);
   lcd.print("  Phone Number  ");
   lcd.setCursor(0,1);
-  lcd.print("+1 858 ### #### ");
+  lcd.print("+1 858 228 7118 ");
   delay(3000);
   fonaSerial->print("AT+CNMI=2,1\r\n");
 
