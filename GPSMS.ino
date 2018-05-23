@@ -42,19 +42,23 @@ float latitude, longitude, speed_kph, heading, speed_mph, altitude;
 uint8_t readline(char *buff, uint8_t maxbuff, uint16_t timeout = 0);
 
 void setup() {
+
   while (!Serial);
   Serial.begin(115200);
   fonaSerial->begin(4800);
+
   // welcoming screen/message & boot up (start up GPS and GSM connection)
   lcd.begin(16, 2);
   lcd.print("  Initialising  ");
   lcd.setCursor(0,1);
   lcd.print(" Carduino GPSMS ");
+
   // get the GPS and GSM module up and running
   fona.enableGPS(true);
   uint8_t imeiLen = fona.getIMEI(imei);
   delay(3000); // three second delay for readability
   lcd.clear();
+
   // print SIM IMEI & Phone Number
   lcd.setCursor(0,0);
   lcd.print("      IMEI      ");
@@ -67,9 +71,9 @@ void setup() {
   lcd.print("+1 858 ### #### ");
   delay(3000);
   fonaSerial->print("AT+CNMI=2,1\r\n");
+
   // Display initial GPS Coordinate
   boolean gps_success = fona.getGPS(&latitude, &longitude, &speed_kph, &heading, &altitude);
-
   if (gps_success) {
     lcd.setCursor(0,0);
     lcd.print("   GPS online   ");
@@ -81,9 +85,9 @@ void setup() {
     lcd.setCursor(0,1);
     lcd.print("lat,long,mph,alt");
     delay(3000);
-    lcd.print(dtostrf(latitude%10000000) + "," + dtostrf(longitude%10000000));
+    lcd.print(dtostrf(latitude).substr(0,8) + "," + dtostrf(longitude).substr(0,7));
     lcd.setCursor(0,1);
-    lcd.print(dtostrf(0.621371192 * speed_kph).substr(0,4) + "mph," + dtostrf(altitude).substr(0,4));
+    lcd.print(dtostrf(0.621371192 * speed_kph).substr(0,4) + "mph," + dtostrf(altitude).substr(0,8));
     delay(3000);
   }
 
