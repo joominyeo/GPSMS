@@ -38,7 +38,6 @@ char smsBuffer[250];
 float latitude, longitude, speed_kph, heading, speed_mph, altitude;
 char lat[8], lon[7], spd[4], alt[7], latlon[16], spdalt[16];
 
-uint8_t readline(char *buff, uint8_t maxbuff, uint16_t timeout = 0);
 uint8_t type;
 
 void setup() {
@@ -119,10 +118,8 @@ void setup() {
 int counter = 1;
 
 void loop() {
-  Serial.println("ENTERED LOOP CODE");
-  Serial.print("Counter: "); Serial.println(counter);
-  counter = counter + 1;
-  delay(1000);
+  autoReply();
+  Serial.println("LOOP IS STILL RUNNING AYYYY");
   // put your main code here, to run repeatedly:
 
   /* While (not receiving text msg)
@@ -131,41 +128,59 @@ void loop() {
   */
 }
 
-uint8_t readline(char *buff, uint8_t maxbuff, uint16_t timeout) {
-  uint16_t buffidx = 0;
-  boolean timeoutvalid = true;
-  if (timeout == 0) timeoutvalid = false;
-
-  while (true) {
-    if (buffidx > maxbuff) {
-      //Serial.println(F("SPACE"));
-      break;
-    }
-
-    while (Serial.available()) {
-      char c =  Serial.read();
-
-      //Serial.print(c, HEX); Serial.print("#"); Serial.println(c);
-
-      if (c == '\r') continue;
-      if (c == 0xA) {
-        if (buffidx == 0)   // the first 0x0A is ignored
-          continue;
-
-        timeout = 0;         // the second 0x0A is the end of the line
-        timeoutvalid = true;
-        break;
+void autoReply() {
+    char* bufPtr = fonaNotificationBuffer;    //handy buffer pointer
+  
+  if (fona.available())      //any data available from the FONA?
+  {
+    int slot = 0;            //this will be the slot number of the SMS
+    int charCount = 0;
+    //Read the notification into fonaInBuffer
+    do  {
+      *bufPtr = fona.read();
+      Serial.write(*bufPtr);
+      delay(1);
+    } while ((*bufPtr++ != '\n') && (fona.available()) && (++charCount < (sizeof(fonaNotificationBuffer)-1)));
+    
+    //Add a terminal NULL to the notification string
+    *bufPtr = 0;
+ 
+    //Scan the notification string for an SMS received notification.
+    //  If it's an SMS message, we'll get the slot number in 'slot'
+    if (1 == sscanf(fonaNotificationBuffer, "+CMTI: " FONA_PREF_SMS_STORAGE ",%d", &slot)) {
+      Serial.print("slot: "); Serial.println(slot);
+      
+      char callerIDbuffer[32];  //we'll store the SMS sender number in here
+      
+      // Retrieve SMS sender address/phone number.
+      if (! fona.getSMSSender(slot, callerIDbuffer, 31)) {
+        Serial.println("Didn't find SMS message in slot!");
       }
-      buff[buffidx] = c;
-      buffidx++;
+      Serial.print(F("FROM: ")); Serial.println(callerIDbuffer);
+ 
+        // Retrieve SMS value.
+        uint16_t smslen;
+        if (fona.readSMS(slot, smsBuffer, 250, &smslen)) { // pass in buffer and max len!
+          Serial.println(smsBuffer);
+        }
+ 
+      //Send back an automatic response
+      Serial.println("Sending reponse...");
+      if (!fona.sendSMS(callerIDbuffer, "This is an automatic reply! IT WORKS!")) {
+        Serial.println(F("Failed"));
+      } else {
+        Serial.println(F("Sent!"));
+      }
+      
+      // delete the original msg after it is processed
+      //   otherwise, we will fill up all the slots
+      //   and then we won't be able to receive SMS anymore
+      if (fona.deleteSMS(slot)) {
+        Serial.println(F("OK!"));
+      } else {
+        Serial.print(F("Couldn't delete SMS in slot ")); Serial.println(slot);
+        fona.print(F("AT+CMGD=?\r\n"));
+      }
     }
-
-    if (timeoutvalid && timeout == 0) {
-      //Serial.println(F("TIMEOUT"));
-      break;
-    }
-    delay(1);
   }
-  buff[buffidx] = 0;  // null term
-  return buffidx;
 }
