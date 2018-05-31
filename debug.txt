@@ -1,0 +1,8 @@
+documentation
+BUGS
+
+1) Had a problem with FONA communication with Arduino and Serial
+=> SOLVED by adding a 3.7V 1200mAh battery. the problem was in
+
+2) Had a problem with Serial entering infinite loop in setup()
+=> SOLVED by routing the Serial interface port to a non- TX/RX port (i.e. 2,3,4)
