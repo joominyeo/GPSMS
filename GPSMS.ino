@@ -119,13 +119,6 @@ int counter = 1;
 
 void loop() {
   autoReply();
-  Serial.println("LOOP IS STILL RUNNING AYYYY");
-  // put your main code here, to run repeatedly:
-
-  /* While (not receiving text msg)
-  *     display accelerometer information
-  * else respond to the incoming command accordingly
-  */
 }
 
 void autoReply() {
@@ -163,24 +156,27 @@ void autoReply() {
         if (fona.readSMS(slot, smsBuffer, 250, &smslen)) { // pass in buffer and max len!
           Serial.println(smsBuffer);
         }
+
+        if (strcmp(smsBuffer, "Loc")==0 || strcmp(smsBuffer, "loc")==0) { // ONLY RESPONDS TO COMMAND "Loc" and "loc" CASE-SENSITIVE
  
-      //Send back an automatic response
-      Serial.println("Sending reponse...");
-      if (!fona.sendSMS(callerIDbuffer, "This is an automatic reply! IT WORKS!")) {
-        Serial.println(F("Failed"));
-      } else {
-        Serial.println(F("Sent!"));
-      }
-      
-      // delete the original msg after it is processed
-      //   otherwise, we will fill up all the slots
-      //   and then we won't be able to receive SMS anymore
-      if (fona.deleteSMS(slot)) {
-        Serial.println(F("OK!"));
-      } else {
-        Serial.print(F("Couldn't delete SMS in slot ")); Serial.println(slot);
-        fona.print(F("AT+CMGD=?\r\n"));
-      }
+            // Send back an automatic response
+            Serial.println("Sending reponse...");
+            if (!fona.sendSMS(callerIDbuffer, "This is an automatic reply! IT WORKS!")) {
+              Serial.println(F("Failed"));
+              //PRINT TO LCD
+            } else {
+              Serial.println(F("Sent!"));
+              //PRINT TO LCD
+            }
+        }
+          
+        // clear mem
+        if (fona.deleteSMS(slot)) {
+          Serial.println(F("OK!"));
+        } else {
+          Serial.print(F("Couldn't delete SMS in slot ")); Serial.println(slot);
+          fona.print(F("AT+CMGD=?\r\n"));
+        }
     }
   }
 }
