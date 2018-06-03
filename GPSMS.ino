@@ -9,23 +9,23 @@
 // LCD: https://github.com/adafruit/Adafruit-RGB-LCD-Shield-Library
 
 // libraries
-#include <LiquidCrystal.h>
-#include <Wire.h>
+//#include <LiquidCrystal.h>
+//#include <Wire.h>
 
 #include "Adafruit_FONA.h"
 #include <SoftwareSerial.h>
 
-#define REDLITE 5 //CHANGE
-#define GREENLITE 5 //CHANGE
-#define BLUELITE 5
+//#define REDLITE 5 //CHANGE
+//#define GREENLITE 5 //CHANGE
+//#define BLUELITE 5
 
 #define FONA_RX 2
 #define FONA_TX 3
 #define FONA_RST 4
 
 // initialise the library with the numbers of the interface pins
-LiquidCrystal lcd(6, 7, 8, 9, 10, 11);
-int LCD_brightness = 255;
+//LiquidCrystal lcd(6, 7, 8, 9, 10, 11);
+//int LCD_brightness = 255;
 
 SoftwareSerial fonaSS = SoftwareSerial(FONA_TX, FONA_RX);
 SoftwareSerial* fonaSerial = &fonaSS;
@@ -36,7 +36,7 @@ char imei[16] = { 0 };
 char fonaNotificationBuffer[64]; //for notifications from the FONA
 char smsBuffer[250];
 float latitude, longitude, speed_kph, heading, speed_mph, altitude;
-char lat[8], lon[8], spd[6], alt[6], locinfo[40], url[100];
+char lat[8], lon[8], spd[6], alt[6], locinfo[40], url[50];
 boolean gps_success;
 
 uint8_t type;
@@ -58,32 +58,32 @@ void setup()
     Serial.println(F("Starting Setup"));
     // welcoming screen/message & boot up (start up GPS and GSM connection)
 
-    lcd.begin(16, 2);
-    lcd.print("  Initialising  ");
+    //lcd.begin(16, 2);
+    //lcd.print("  Initialising  ");
     Serial.println(F("  Initialising  "));
-    lcd.setCursor(0, 1);
-    lcd.print(" Carduino GPSMS ");
+    //lcd.setCursor(0, 1);
+    //lcd.print(" Carduino GPSMS ");
     Serial.println(F(" Carduino GPSMS "));
 
     // get the GPS and GSM module up and running
     fona.enableGPS(true);
     uint8_t imeiLen = fona.getIMEI(imei);
     delay(1000);
-    lcd.clear();
+    //lcd.clear();
 
     // print SIM IMEI & Phone Number
-    lcd.setCursor(0, 0);
-    lcd.print("      IMEI      ");
+    //lcd.setCursor(0, 0);
+    //lcd.print("      IMEI      ");
     Serial.println("      IMEI      ");
-    lcd.setCursor(0, 1);
-    lcd.print(imei);
+    //lcd.setCursor(0, 1);
+    //lcd.print(imei);
     Serial.println(imei);
     delay(1000);
-    lcd.setCursor(0, 0);
-    lcd.print("  Phone Number  ");
+    //lcd.setCursor(0, 0);
+    //lcd.print("  Phone Number  ");
     Serial.println(F("  Phone Number  "));
-    lcd.setCursor(0, 1);
-    lcd.print("+1 858 228 7118 ");
+    //lcd.setCursor(0, 1);
+    //lcd.print("+1 858 228 7118 ");
     Serial.println(F("+1 858 228 7118 "));
     delay(1000);// increase to 3000 for LCD
     fonaSerial->print("AT+CNMI=2,1\r\n");
@@ -135,19 +135,38 @@ void autoReply()
                 Serial.println(smsBuffer);
             }
 
-            if (strcmp(smsBuffer, "Loc") == 0 || strcmp(smsBuffer, "loc") == 0) { // ONLY RESPONDS TO COMMAND "Loc" and "loc" CASE-SENSITIVE
+            if (strcmp(smsBuffer, "Locc") == 0 || strcmp(smsBuffer, "Locl") == 0) { // ONLY RESPONDS TO COMMAND "Loc" and "loc" CASE-SENSITIVE
 
                 // Send back an automatic response
-                grabGPS();
-                Serial.println("Sending reponse...");
-                if (!(fona.sendSMS(callerIDbuffer, locinfo)&fona.sendSMS(callerIDbuffer, url))) { //TYPE MESSAGE HERE
-                    Serial.println(F("Failed"));
-                    //PRINT TO LCD
+                gps_success = fona.getGPS(&latitude, &longitude, &speed_kph, &heading, &altitude);
+                while(!gps_success) {
+                  Serial.println("> Fixing GPS");
+                  delay(2000);
                 }
-                else {
-                    Serial.println(F("Sent!"));
-                    //PRINT TO LCD
+                if (strcmp(smsBuffer, "Locc") == 0) {
+                  grabGPScoor();
+                  Serial.println("Sending reponse...");
+                  if (!fona.sendSMS(callerIDbuffer, locinfo)) { //TYPE MESSAGE HERE
+                      Serial.println(F("Failed"));
+                      //PRINT TO LCD
+                  }
+                  else {
+                      Serial.println(F("Sent!"));
+                      //PRINT TO LCD
+                  }
+                } else {
+                  grabMapLink();
+                  Serial.println("Sending reponse...");
+                  if (!fona.sendSMS(callerIDbuffer, url)) { //TYPE MESSAGE HERE
+                      Serial.println(F("Failed"));
+                      //PRINT TO LCD
+                  }
+                  else {
+                      Serial.println(F("Sent!"));
+                      //PRINT TO LCD
+                  }
                 }
+                
             }
 
             // clear mem
@@ -163,37 +182,31 @@ void autoReply()
     }
 } // end of autoreply
 
-void grabGPS()
+void grabGPScoor()
 {
-  gps_success = fona.getGPS(&latitude, &longitude, &speed_kph, &heading, &altitude);
-    while(!gps_success) {
-      Serial.println("> Fixing GPS");
-      delay(2000);
-    }
-    if (gps_success) {
-        lcd.setCursor(0, 0);
-        lcd.print("   GPS online   ");
-        lcd.setCursor(0, 1);
-        lcd.print("lat,long,mph,alt");
-        dtostrf(latitude, 6,4, lat);
-        dtostrf(abs(longitude), 6,4, lon);
-        dtostrf(speed_kph, 4,1, spd);
-        dtostrf(altitude, 4,1, alt);
-        strcat(locinfo,lat);
-        strcat(locinfo, "N, ");
-        strcat(locinfo,lon);
-        strcat(locinfo,"W, "); //California is in the western hemisphere
-        strcat(locinfo,spd);
-        strcat(locinfo,"kph, ");
-        strcat(locinfo,alt);
-        strcat(locinfo,"m");
-        Serial.println(locinfo);
-    }
-    strcat(url,"https://www.google.com/maps/place/");
-    strcat(url,lat);
-    strcat(url,"N+");
-    strcat(url,lon);
-    strcat(url,"W");
-    Serial.println(url);
-} // end of grabGPS
+      dtostrf(latitude, 6,4, lat);
+      strcat(locinfo,lat);
+      strcat(locinfo, "N, ");
+      dtostrf(-1 * longitude, 6,4, lon);
+      strcat(locinfo,lon);
+      strcat(locinfo,"W, "); //California is in the western hemisphere
+      dtostrf(speed_kph, 4,1, spd);
+      strcat(locinfo,spd);
+      strcat(locinfo,"kph, ");
+      dtostrf(altitude, 4,1, alt);
+      strcat(locinfo,alt);
+      strcat(locinfo,"m");
+      Serial.println(locinfo);
+} // end of grabGPScoor
 
+void grabMapLink()
+{
+      strcat(url,"https://www.google.com/maps/place/");
+      dtostrf(latitude, 6,4, lat);
+      strcat(url,lat);
+      strcat(url,"N+");
+      dtostrf(-1 * longitude, 6,4, lon);
+      strcat(url,lon);
+      strcat(url,"W");
+      Serial.println(url);
+} // end of grabMapLink
