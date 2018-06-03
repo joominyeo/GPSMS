@@ -9,8 +9,7 @@
 // LCD: https://github.com/adafruit/Adafruit-RGB-LCD-Shield-Library
 
 // libraries
-//#include <LiquidCrystal.h>
-//#include <Wire.h>
+#include <LiquidCrystal.h>
 
 #include "Adafruit_FONA.h"
 #include <SoftwareSerial.h>
@@ -24,7 +23,8 @@
 #define FONA_RST 4
 
 // initialise the library with the numbers of the interface pins
-//LiquidCrystal lcd(6, 7, 8, 9, 10, 11);
+const int rs = 7, en = 8, db4 = 9, db5 = 10, db6 = 11, db7 = 12;
+LiquidCrystal lcd(rs, en, db4, db5, db6, db7);
 //int LCD_brightness = 255;
 
 SoftwareSerial fonaSS = SoftwareSerial(FONA_TX, FONA_RX);
@@ -50,38 +50,40 @@ void setup()
 
     Serial.println(F("Starting Setup"));
     // welcoming screen/message & boot up (start up GPS and GSM connection)
-
-    //lcd.begin(16, 2);
-    //lcd.print("  Initialising  ");
+    lcd.begin(16, 2);
+    lcd.print("Initialising");
     Serial.println(F("  Initialising  "));
-    //lcd.setCursor(0, 1);
-    //lcd.print(" Carduino GPSMS ");
+    lcd.setCursor(0, 1); // (col, row)
+    lcd.print("GPSMS");
     Serial.println(F(" Carduino GPSMS "));
 
     // get the GPS and GSM module up and running
     fona.enableGPS(true);
     uint8_t imeiLen = fona.getIMEI(imei);
     delay(1000);
-    //lcd.clear();
+    lcd.clear();
 
     // print SIM IMEI & Phone Number
-    //lcd.setCursor(0, 0);
-    //lcd.print("      IMEI      ");
+    lcd.setCursor(0, 0);
+    lcd.print("IMEI");
     Serial.println("      IMEI      ");
-    //lcd.setCursor(0, 1);
-    //lcd.print(imei);
+    lcd.setCursor(0, 1);
+    lcd.print(imei);
     Serial.println(imei);
     delay(1000);
-    //lcd.setCursor(0, 0);
-    //lcd.print("  Phone Number  ");
+    lcd.setCursor(0, 0);
+    lcd.print("Phone Number");
     Serial.println(F("  Phone Number  "));
-    //lcd.setCursor(0, 1);
-    //lcd.print("+1 858 228 7118 ");
+    lcd.setCursor(0, 1);
+    lcd.print("+18582287118");
     Serial.println(F("+1 858 228 7118 "));
     delay(1000);// increase to 3000 for LCD
     fonaSerial->print("AT+CNMI=2,1\r\n");
 
     Serial.println("SETUP COMPLETE");
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("BOOT COMPLETE");
 } // end of setup
 
 void loop()
@@ -121,6 +123,10 @@ void autoReply()
             }
             Serial.print(F("FROM: "));
             Serial.println(callerIDbuffer);
+            lcd.clear();
+            lcd.setCursor(0, 0);
+            lcd.print("COMMAND FROM");
+            lcd.print(callerIDbuffer);
 
             // Retrieve SMS value.
             uint16_t smslen;
@@ -139,9 +145,25 @@ void autoReply()
                 if (strcmp(smsBuffer, "Locc") == 0 || strcmp(smsBuffer, "locc") == 0) {
                     grabGPScoor();
                     fona.sendSMS(callerIDbuffer, locinfo);
+                    lcd.clear();
+                    lcd.setCursor(0, 0);
+                    lcd.print("COORDINATES");
+                    lcd.setCursor(0, 1);
+                    lcd.print("SENT!");
+                    lcd.clear();
+                    lcd.setCursor(0, 0);
+                    lcd.print(locinfo);
                 } else { // Generate and replay back with a Google Maps link
                     grabMapLink();
                     fona.sendSMS(callerIDbuffer, url);
+                    lcd.clear();
+                    lcd.setCursor(0, 0);
+                    lcd.print("MAP LINK");
+                    lcd.setCursor(0, 1);
+                    lcd.print("SENT!");
+                    lcd.clear();
+                    lcd.setCursor(0, 0);
+                    lcd.print(locinfo);
                 }
             }
 
