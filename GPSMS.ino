@@ -38,22 +38,15 @@ char smsBuffer[250];
 float latitude, longitude, speed_kph, heading, speed_mph, altitude;
 char lat[8], lon[8], spd[6], alt[6], locinfo[40], url[50];
 boolean gps_success;
-
 uint8_t type;
 
 void setup()
 {
-    while (!Serial)
-        ;
+    while (!Serial);
 
     Serial.begin(115200);
     fonaSerial->begin(4800);
-    if (!fona.begin(*fonaSerial)) {
-        //Serial.println(F("Couldn't find FONA"));
-        //while (1);
-    }
     type = fona.type();
-    Serial.println(F("FONA is OK"));
 
     Serial.println(F("Starting Setup"));
     // welcoming screen/message & boot up (start up GPS and GSM connection)
@@ -135,38 +128,21 @@ void autoReply()
                 Serial.println(smsBuffer);
             }
 
-            if (strcmp(smsBuffer, "Locc") == 0 || strcmp(smsBuffer, "Locl") == 0) { // ONLY RESPONDS TO COMMAND "Loc" and "loc" CASE-SENSITIVE
+            if (strcmp(smsBuffer, "Locc") == 0 || strcmp(smsBuffer, "Locl") == 0 || strcmp(smsBuffer, "locc") == 0 || strcmp(smsBuffer, "locl") == 0) { // ONLY RESPONDS TO COMMAND "Loc" and "loc" CASE-SENSITIVE
 
                 // Send back an automatic response
                 gps_success = fona.getGPS(&latitude, &longitude, &speed_kph, &heading, &altitude);
                 while(!gps_success) {
-                  Serial.println("> Fixing GPS");
-                  delay(2000);
+                    Serial.println("> Fixing GPS");
+                    delay(2000);
                 }
-                if (strcmp(smsBuffer, "Locc") == 0) {
-                  grabGPScoor();
-                  Serial.println("Sending reponse...");
-                  if (!fona.sendSMS(callerIDbuffer, locinfo)) { //TYPE MESSAGE HERE
-                      Serial.println(F("Failed"));
-                      //PRINT TO LCD
-                  }
-                  else {
-                      Serial.println(F("Sent!"));
-                      //PRINT TO LCD
-                  }
-                } else {
-                  grabMapLink();
-                  Serial.println("Sending reponse...");
-                  if (!fona.sendSMS(callerIDbuffer, url)) { //TYPE MESSAGE HERE
-                      Serial.println(F("Failed"));
-                      //PRINT TO LCD
-                  }
-                  else {
-                      Serial.println(F("Sent!"));
-                      //PRINT TO LCD
-                  }
+                if (strcmp(smsBuffer, "Locc") == 0 || strcmp(smsBuffer, "locc") == 0) {
+                    grabGPScoor();
+                    fona.sendSMS(callerIDbuffer, locinfo);
+                } else { // Generate and replay back with a Google Maps link
+                    grabMapLink();
+                    fona.sendSMS(callerIDbuffer, url);
                 }
-                
             }
 
             // clear mem
@@ -184,29 +160,29 @@ void autoReply()
 
 void grabGPScoor()
 {
-      dtostrf(latitude, 6,4, lat);
-      strcat(locinfo,lat);
-      strcat(locinfo, "N, ");
-      dtostrf(-1 * longitude, 6,4, lon);
-      strcat(locinfo,lon);
-      strcat(locinfo,"W, "); //California is in the western hemisphere
-      dtostrf(speed_kph, 4,1, spd);
-      strcat(locinfo,spd);
-      strcat(locinfo,"kph, ");
-      dtostrf(altitude, 4,1, alt);
-      strcat(locinfo,alt);
-      strcat(locinfo,"m");
-      Serial.println(locinfo);
+    dtostrf(latitude, 6,4, lat);
+    strcat(locinfo,lat);
+    strcat(locinfo, "N, ");
+    dtostrf(-1 * longitude, 6,4, lon);
+    strcat(locinfo,lon);
+    strcat(locinfo,"W, "); //California is in the western hemisphere
+    dtostrf(speed_kph, 4,1, spd);
+    strcat(locinfo,spd);
+    strcat(locinfo,"kph, ");
+    dtostrf(altitude, 4,1, alt);
+    strcat(locinfo,alt);
+    strcat(locinfo,"m");
+    Serial.println(locinfo);
 } // end of grabGPScoor
 
 void grabMapLink()
 {
-      strcat(url,"https://www.google.com/maps/place/");
-      dtostrf(latitude, 6,4, lat);
-      strcat(url,lat);
-      strcat(url,"N+");
-      dtostrf(-1 * longitude, 6,4, lon);
-      strcat(url,lon);
-      strcat(url,"W");
-      Serial.println(url);
+    strcat(url,"https://www.google.com/maps/place/");
+    dtostrf(latitude, 6,4, lat);
+    strcat(url,lat);
+    strcat(url,"N+");
+    dtostrf(-1 * longitude, 6,4, lon);
+    strcat(url,lon);
+    strcat(url,"W");
+    Serial.println(url);
 } // end of grabMapLink
