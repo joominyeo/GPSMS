@@ -14,10 +14,6 @@
 #include "Adafruit_FONA.h"
 #include <SoftwareSerial.h>
 
-//#define REDLITE 5 //CHANGE
-//#define GREENLITE 5 //CHANGE
-//#define BLUELITE 5
-
 #define FONA_RX 2
 #define FONA_TX 3
 #define FONA_RST 4
@@ -25,7 +21,6 @@
 // initialise the library with the numbers of the interface pins
 const int rs = 7, en = 8, db4 = 9, db5 = 10, db6 = 11, db7 = 12;
 LiquidCrystal lcd(rs, en, db4, db5, db6, db7);
-//int LCD_brightness = 255;
 
 SoftwareSerial fonaSS = SoftwareSerial(FONA_TX, FONA_RX);
 SoftwareSerial* fonaSerial = &fonaSS;
@@ -46,6 +41,10 @@ void setup()
 
     Serial.begin(115200);
     fonaSerial->begin(4800);
+    if (!fona.begin(*fonaSerial)) {
+        //Serial.println(F("Couldn't find FONA"));
+        //while (1);
+    }
     type = fona.type();
 
     Serial.println(F("Starting Setup"));
@@ -53,9 +52,11 @@ void setup()
     lcd.begin(16, 2);
     lcd.print("Initialising");
     Serial.println(F("  Initialising  "));
+    delay(1000);
     lcd.setCursor(0, 1); // (col, row)
-    lcd.print("GPSMS");
+    lcd.print("Carduino GPSMS");
     Serial.println(F(" Carduino GPSMS "));
+    delay(1000);
 
     // get the GPS and GSM module up and running
     fona.enableGPS(true);
@@ -65,25 +66,28 @@ void setup()
 
     // print SIM IMEI & Phone Number
     lcd.setCursor(0, 0);
-    lcd.print("IMEI");
+    lcd.print("      IMEI      ");
     Serial.println("      IMEI      ");
     lcd.setCursor(0, 1);
     lcd.print(imei);
     Serial.println(imei);
-    delay(1000);
+    delay(2000);
     lcd.setCursor(0, 0);
-    lcd.print("Phone Number");
+    lcd.print("  Phone Number  ");
     Serial.println(F("  Phone Number  "));
     lcd.setCursor(0, 1);
-    lcd.print("+18582287118");
+    lcd.print("+1 858 228 7118 ");
     Serial.println(F("+1 858 228 7118 "));
-    delay(1000);// increase to 3000 for LCD
+    delay(3000);// increase to 3000 for LCD
     fonaSerial->print("AT+CNMI=2,1\r\n");
 
     Serial.println("SETUP COMPLETE");
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("BOOT COMPLETE");
+    lcd.print(" SETUP COMPLETE ");
+    delay(1000);
+    lcd.setCursor(0, 1);
+    lcd.print(" SYSTEMS ONLINE ");
 } // end of setup
 
 void loop()
@@ -126,6 +130,7 @@ void autoReply()
             lcd.clear();
             lcd.setCursor(0, 0);
             lcd.print("COMMAND FROM");
+            lcd.setCursor(0, 1);
             lcd.print(callerIDbuffer);
 
             // Retrieve SMS value.
@@ -150,9 +155,11 @@ void autoReply()
                     lcd.print("COORDINATES");
                     lcd.setCursor(0, 1);
                     lcd.print("SENT!");
+                    delay(3000);
                     lcd.clear();
                     lcd.setCursor(0, 0);
-                    lcd.print(locinfo);
+                    lcd.print(" SYSTEMS ONLINE ");
+                    delay(1500);
                 } else { // Generate and replay back with a Google Maps link
                     grabMapLink();
                     fona.sendSMS(callerIDbuffer, url);
@@ -161,9 +168,11 @@ void autoReply()
                     lcd.print("MAP LINK");
                     lcd.setCursor(0, 1);
                     lcd.print("SENT!");
+                    delay(3000);
                     lcd.clear();
                     lcd.setCursor(0, 0);
-                    lcd.print(locinfo);
+                    lcd.print(" SYSTEMS ONLINE ");
+                    delay(1500);
                 }
             }
 
@@ -188,9 +197,9 @@ void grabGPScoor()
     dtostrf(-1 * longitude, 6,4, lon);
     strcat(locinfo,lon);
     strcat(locinfo,"W, "); //California is in the western hemisphere
-    dtostrf(speed_kph, 4,1, spd);
+    dtostrf(speed_kph * 0.621371, 4,1, spd);
     strcat(locinfo,spd);
-    strcat(locinfo,"kph, ");
+    strcat(locinfo,"mph, ");
     dtostrf(altitude, 4,1, alt);
     strcat(locinfo,alt);
     strcat(locinfo,"m");
