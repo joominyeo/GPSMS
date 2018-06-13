@@ -1,6 +1,6 @@
 # Carduino GPSMS
 
-[![https://img.shields.io/badge/build-complete-brightgreen.svg]]
+[![GPSMS](https://img.shields.io/badge/build-complete-brightgreen.svg)]
 
 UCSD ECE196 Final Project SP18
 
