@@ -1,12 +1,14 @@
 # Carduino GPSMS
 
+[![https://img.shields.io/badge/build-complete-brightgreen.svg]]
+
 UCSD ECE196 Final Project SP18
 
 By: Joo Min (Cai) Yeo, Lucas Nascimento, Liezl Maree
 
 Last edit: 201805091506
 
-GPSMS, a combination of GPS + SMS, is a low-cost tracking device specially designed for your vehicle.
+GPSMS, a combination of GPS + SMS, is a low-cost tracking hardware that uses test messaging to track your vehicle.
 
 ##According to the U.S. Department of Justice, FBI, and Uniform Crime Reports statistics, more than three quarters of a million cars were stolen in 2016 alone. Inspired by a friend who got his car stolen couple months ago, our final project, GPSMS, will provide a low cost and effective solution to vehicle theft. 
 Through this project, we hope to provide car owners with a peace of mind and ability to know where the location of their car at all times. This will help drivers to not only react to theft in a fast and safe manner--rather than chasing down the car themselves--but also have preventative measures to keep the cars secure. In addition, GPSMS can do simple, everyday task such as helping users pinpoint the location of their vehicle in a large parking lot. 
