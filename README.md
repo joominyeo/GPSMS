@@ -1,5 +1,4 @@
 ![gpsmsxx](https://github.com/joominyeo/GPSMS/blob/master/logo/xxxhdpi.png)
-https://user-images.githubusercontent.com/37498811/41367916-377f991c-6f62-11e8-8820-32be37c10c9d.png
 
 # Carduino GPSMS
 
@@ -23,3 +22,5 @@ Although this project was initially developed to help the users track the locati
 >>Insert steps
 
 https://cdn-learn.adafruit.com/downloads/pdf/adafruit-fona-808-cellular-plus-gps-breakout.pdf
+
+Original logo: https://user-images.githubusercontent.com/37498811/41367916-377f991c-6f62-11e8-8820-32be37c10c9d.png
