@@ -14,6 +14,11 @@
 #include "Adafruit_FONA.h"
 #include <SoftwareSerial.h>
 
+#include <Wire.h>
+#include <PN532_I2C.h>
+#include <PN532.h>   // The following files are included in the libraries Installed
+#include <NfcAdapter.h>
+
 #define FONA_RX 2
 #define FONA_TX 3
 #define FONA_RST 4
@@ -34,6 +39,10 @@ float latitude, longitude, speed_kph, heading, speed_mph, altitude;
 char lat[8], lon[8], spd[6], alt[6], locinfo[40], url[50];
 boolean gps_success;
 uint8_t type;
+
+PN532_I2C pn532_i2c(Wire);
+NfcAdapter nfc = NfcAdapter(pn532_i2c);  // Indicates the Shield you are using
+int tagged = 0;
 
 void setup()
 {
@@ -85,13 +94,24 @@ void setup()
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print(" SETUP COMPLETE ");
-    delay(1000);
+    nfc.begin();
     lcd.setCursor(0, 1);
+    lcd.print("   NFC ENABLED  ");
+    delay(2000);
+    lcd.setCursor(0, 0);
     lcd.print(" SYSTEMS ONLINE ");
+    lcd.setCursor(0, 1);
+    lcd.print("  TAG NFC NOW   ");
+    nfcRecognition();
 } // end of setup
 
 void loop()
 {
+    if (tagged == 0)
+    {
+      delay(30000); // 5 mins
+      nfcRecognition();
+    }
     autoReply();
 } // end of loop
 
@@ -139,7 +159,8 @@ void autoReply()
                 Serial.println(smsBuffer);
             }
 
-            if (strcmp(smsBuffer, "Locc") == 0 || strcmp(smsBuffer, "Locl") == 0 || strcmp(smsBuffer, "locc") == 0 || strcmp(smsBuffer, "locl") == 0) { // ONLY RESPONDS TO COMMAND "Loc" and "loc" CASE-SENSITIVE
+            if (strcmp(smsBuffer, "Locc") == 0 || strcmp(smsBuffer, "Locl") == 0 || strcmp(smsBuffer, "locc") == 0 || strcmp(smsBuffer, "locl") == 0) {
+                // ONLY RESPONDS TO COMMAND "Locc" and "locl" CASE-SENSITIVE (1st letter only)
 
                 // Send back an automatic response
                 gps_success = fona.getGPS(&latitude, &longitude, &speed_kph, &heading, &altitude);
@@ -217,3 +238,21 @@ void grabMapLink()
     strcat(url,"W");
     Serial.println(url);
 } // end of grabMapLink
+
+void nfcRecognition()
+{
+  if (nfc.tagPresent())
+  {
+    NfcTag tag = nfc.read();
+    Serial.println(tag.getTagType());
+    Serial.print("UID: ");Serial.println(tag.getUidString()); // Retrieves the Unique Identification from your tag
+    //add timer here prob send text message after 30 mins of reboot
+    if (strcmp(tag.getUidString(),"") != 0)
+    {
+      smsBuffer = "Locl"; // send
+      autoReply();
+    }
+  }
+  tagged == 1;
+} // endof nfcRecognition
+// https://www.allaboutcircuits.com/projects/read-and-write-on-nfc-tags-with-an-arduino/
