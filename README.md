@@ -8,7 +8,7 @@ UCSD ECE196 Final Project SP18
 
 By: Joo Min (Cai) Yeo, Lucas Nascimento, Liezl Maree
 
-Last edit: 201805091506
+Last edit: 201806181103
 
 GPSMS, a combination of GPS + SMS, is a low-cost tracking hardware that uses test messaging to track your vehicle.
 
@@ -17,9 +17,7 @@ Through this project, we hope to provide car owners with a peace of mind and abi
 Furthermore, with the ability to log accelerometer data, the arduino will have the ability to safe drive data in case of an accident. This will help drivers prove that they have been maneuvering in a safe or unsafe manner should there be a need to prove the driving style of the driver.
 Although this project was initially developed to help the users track the location of the car in real-time, it can be extended to tracking other commonly stolen, lost, or misplaced items.
 
->>Insert overview here (cost, materials)
-
->>Insert steps
+>>TODO: NFC capabilities
 
 https://cdn-learn.adafruit.com/downloads/pdf/adafruit-fona-808-cellular-plus-gps-breakout.pdf
 
